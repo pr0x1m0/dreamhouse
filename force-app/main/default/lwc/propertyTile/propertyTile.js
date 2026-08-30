@@ -2,8 +2,6 @@ import { LightningElement, api } from 'lwc';
 import FORM_FACTOR from '@salesforce/client/formFactor';
 import { NavigationMixin } from 'lightning/navigation';
 
-const ACTIVE_STATUS = 'Available';
-
 export default class PropertyTile extends NavigationMixin(LightningElement) {
     @api property;
     formFactor = FORM_FACTOR;
@@ -30,15 +28,5 @@ export default class PropertyTile extends NavigationMixin(LightningElement) {
 
     get backgroundImageStyle() {
         return `background-image:url(${this.property.Thumbnail__c})`;
-    }
-
-    get daysOnMarketText() {
-        if (
-            this.property.Status__c !== ACTIVE_STATUS ||
-            !this.property.Date_Listed__c
-        ) {
-            return undefined;
-        }
-        return `Listed ${this.property.Days_On_Market__c} days ago`;
     }
 }

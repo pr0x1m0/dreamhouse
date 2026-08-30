@@ -57,33 +57,6 @@ describe('c-property-tile-list', () => {
             );
         });
 
-        it('passes days-on-market fields through to each tile per page', async () => {
-            const element = createElement('c-property-tile-list', {
-                is: PropertyTileList
-            });
-            document.body.appendChild(element);
-
-            // Emit mock properties
-            getPagedPropertyList.emit(mockgetPagedPropertyList);
-
-            // Wait for any asynchronous DOM updates
-            await flushPromises();
-
-            const propertyTileEls =
-                element.shadowRoot.querySelectorAll('c-property-tile');
-            mockgetPagedPropertyList.records.forEach((record, index) => {
-                expect(propertyTileEls[index].property.Status__c).toBe(
-                    record.Status__c
-                );
-                expect(propertyTileEls[index].property.Date_Listed__c).toBe(
-                    record.Date_Listed__c
-                );
-                expect(propertyTileEls[index].property.Days_On_Market__c).toBe(
-                    record.Days_On_Market__c
-                );
-            });
-        });
-
         it('renders error panel when error returned', async () => {
             const element = createElement('c-property-tile-list', {
                 is: PropertyTileList

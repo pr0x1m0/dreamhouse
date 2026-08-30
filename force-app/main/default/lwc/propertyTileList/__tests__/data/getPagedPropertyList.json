@@ -11,10 +11,7 @@
             "Price__c": 450000,
             "Baths__c": 1,
             "Beds__c": 3,
-            "Thumbnail__c": "https://s3-us-west-2.amazonaws.com/dev-or-devrl-s3-bucket/sample-apps/realty/house07sq.jpg",
-            "Status__c": "Available",
-            "Date_Listed__c": "2026-08-19",
-            "Days_On_Market__c": 12
+            "Thumbnail__c": "https://s3-us-west-2.amazonaws.com/dev-or-devrl-s3-bucket/sample-apps/realty/house07sq.jpg"
         },
         {
             "Id": "a012F000009ovH2QAI",
@@ -25,10 +22,7 @@
             "Price__c": 450000,
             "Baths__c": 4,
             "Beds__c": 5,
-            "Thumbnail__c": "https://s3-us-west-2.amazonaws.com/dev-or-devrl-s3-bucket/sample-apps/realty/house10sq.jpg",
-            "Status__c": "Closed",
-            "Date_Listed__c": "2026-07-01",
-            "Days_On_Market__c": 61
+            "Thumbnail__c": "https://s3-us-west-2.amazonaws.com/dev-or-devrl-s3-bucket/sample-apps/realty/house10sq.jpg"
         },
         {
             "Id": "a012F000009ovH3QAI",

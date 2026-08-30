@@ -11,8 +11,6 @@ const PROPERTY = {
     Id: '12345'
 };
 
-const DAYS_ON_MARKET_SELECTOR = '.days-on-market';
-
 describe('c-property-tile', () => {
     afterEach(() => {
         // The jsdom instance is shared across test cases in a single file so reset the DOM
@@ -95,77 +93,5 @@ describe('c-property-tile', () => {
         document.body.appendChild(element);
 
         await expect(element).toBeAccessible();
-    });
-
-    it('shows days on market for an active, listed property', () => {
-        const element = createElement('c-property-tile', {
-            is: PropertyTile
-        });
-        element.property = {
-            ...PROPERTY,
-            Status__c: 'Available',
-            Date_Listed__c: '2026-08-19',
-            Days_On_Market__c: 12
-        };
-        document.body.appendChild(element);
-
-        const daysOnMarketEl = element.shadowRoot.querySelector(
-            DAYS_ON_MARKET_SELECTOR
-        );
-        expect(daysOnMarketEl.textContent).toBe('Listed 12 days ago');
-    });
-
-    it('shows 0 days on market for a property listed today', () => {
-        const element = createElement('c-property-tile', {
-            is: PropertyTile
-        });
-        element.property = {
-            ...PROPERTY,
-            Status__c: 'Available',
-            Date_Listed__c: '2026-08-31',
-            Days_On_Market__c: 0
-        };
-        document.body.appendChild(element);
-
-        const daysOnMarketEl = element.shadowRoot.querySelector(
-            DAYS_ON_MARKET_SELECTOR
-        );
-        expect(daysOnMarketEl.textContent).toBe('Listed 0 days ago');
-    });
-
-    it('hides days on market when Date_Listed__c is blank', () => {
-        const element = createElement('c-property-tile', {
-            is: PropertyTile
-        });
-        element.property = {
-            ...PROPERTY,
-            Status__c: 'Available',
-            Date_Listed__c: null,
-            Days_On_Market__c: 0
-        };
-        document.body.appendChild(element);
-
-        const daysOnMarketEl = element.shadowRoot.querySelector(
-            DAYS_ON_MARKET_SELECTOR
-        );
-        expect(daysOnMarketEl).toBeNull();
-    });
-
-    it('hides days on market when the property is not active', () => {
-        const element = createElement('c-property-tile', {
-            is: PropertyTile
-        });
-        element.property = {
-            ...PROPERTY,
-            Status__c: 'Closed',
-            Date_Listed__c: '2026-08-19',
-            Days_On_Market__c: 12
-        };
-        document.body.appendChild(element);
-
-        const daysOnMarketEl = element.shadowRoot.querySelector(
-            DAYS_ON_MARKET_SELECTOR
-        );
-        expect(daysOnMarketEl).toBeNull();
     });
 });
