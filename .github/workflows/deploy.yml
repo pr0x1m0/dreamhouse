@@ -7,14 +7,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Salesforce CLI
-        run: npm install --global @salesforce/cli
+        with:
+          fetch-depth: 0
+      - name: Install Salesforce CLI + SGD plugin
+        run: |
+          npm install --global @salesforce/cli
+          echo y | sf plugins install sfdx-git-delta
+      - name: Generate delta manifest
+        run: |
+          sf sgd source delta --to "HEAD" --from "${{ github.event.before }}" --output "."
+          echo "--- package.xml ---"; cat package/package.xml
       - name: Authenticate to org
         run: |
           echo "${{ secrets.SFDX_AUTH_URL }}" > ./auth.txt
           sf org login sfdx-url --sfdx-url-file ./auth.txt --alias ci --set-default
-      - name: Deploy
-        run: sf project deploy start --source-dir force-app --target-org ci --wait 30
+      - name: Deploy delta
+        run: |
+          if grep -q "<types>" package/package.xml; then
+            sf project deploy start -x package/package.xml \
+              --post-destructive-changes destructiveChanges/destructiveChanges.xml \
+              --target-org ci --wait 30
+          else
+            echo "No metadata changes in this push — nothing to deploy."
+          fi
       - name: Clean up
         if: always()
         run: rm -f ./auth.txt
