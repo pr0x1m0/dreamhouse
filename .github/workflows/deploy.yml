@@ -1,0 +1,20 @@
+name: Deploy to Salesforce
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Salesforce CLI
+        run: npm install --global @salesforce/cli
+      - name: Authenticate to org
+        run: |
+          echo "${{ secrets.SFDX_AUTH_URL }}" > ./auth.txt
+          sf org login sfdx-url --sfdx-url-file ./auth.txt --alias ci --set-default
+      - name: Deploy
+        run: sf project deploy start --source-dir force-app --target-org ci --wait 30
+      - name: Clean up
+        if: always()
+        run: rm -f ./auth.txt
