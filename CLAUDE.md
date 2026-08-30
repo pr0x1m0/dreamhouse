@@ -39,6 +39,10 @@ A pre-commit hook (husky + lint-staged) runs Prettier/ESLint on staged files, so
 4. Open a PR against `main`. A human reviews and merges. The merge triggers the delta deploy — so a merged PR is a release to the dev org.
 5. Docs: change-history drafts go to Confluence at release time via MCP; a human reviews before publish.
 
+## Documentation
+
+All documentation follows the two-layer template in `DOC_TEMPLATE.md`: a plain-language **For everyone** section first, then a **For developers** section — never blurred together. When a change affects a documented feature, append a dated change-history note _and_ edit the living-reference page in place (both layers), rather than only appending. Use the feature-to-page map to find the owning Confluence page. A human reviews doc drafts before they publish.
+
 ## Conventions
 
 - LWC ↔ LWC communication for the listing/filter uses the Lightning Message Service channel `FiltersChange__c` (see `propertyFilter` publishing and the list subscribing). Follow that pattern rather than inventing new events.
