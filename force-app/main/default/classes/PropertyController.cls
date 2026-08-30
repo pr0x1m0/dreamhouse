@@ -58,7 +58,10 @@ public with sharing class PropertyController {
                 Beds__c,
                 Thumbnail__c,
                 Location__Latitude__s,
-                Location__Longitude__s
+                Location__Longitude__s,
+                Date_Listed__c,
+                Days_On_Market__c,
+                Status__c
             FROM Property__c
             WHERE
                 (Name LIKE :searchPattern

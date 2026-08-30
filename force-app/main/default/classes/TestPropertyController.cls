@@ -10,7 +10,9 @@ private class TestPropertyController {
                     Name = 'Name ' + i,
                     Price__c = 20000,
                     Beds__c = 3,
-                    Baths__c = 3
+                    Baths__c = 3,
+                    Status__c = 'Available',
+                    Date_Listed__c = Date.today().addDays(-i)
                 )
             );
         }
@@ -68,6 +70,16 @@ private class TestPropertyController {
             );
             Test.stopTest();
             Assert.areEqual(5, result.records.size());
+            Property__c firstRecord = (Property__c) result.records[0];
+            Assert.isNotNull(
+                firstRecord.Date_Listed__c,
+                'Date_Listed__c should be queried'
+            );
+            Assert.isNotNull(
+                firstRecord.Days_On_Market__c,
+                'Days_On_Market__c should be queried'
+            );
+            Assert.areEqual('Available', firstRecord.Status__c);
         }
     }
 
