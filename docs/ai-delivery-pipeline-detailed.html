@@ -1,0 +1,1899 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AI-augmented delivery pipeline — detailed breakdown</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --ink: #16202e;
+                --ink-soft: #41505f;
+                --ink-mute: #6b7887;
+                --paper: #f4f6f8;
+                --card: #ffffff;
+                --line: #e2e6ea;
+                --line-soft: #eef1f4;
+                --teal: #0f6e56;
+                --teal-bg: #e1f5ee;
+                --teal-line: #1d9e75;
+                --amber: #854f0b;
+                --amber-bg: #faeeda;
+                --amber-line: #ef9f27;
+                --purple: #3c3489;
+                --purple-bg: #eeedfe;
+                --purple-line: #7f77dd;
+                --gray-t: #2c2c2a;
+                --gray-bg: #f1efe8;
+                --gray-line: #b4b2a9;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html {
+                -webkit-text-size-adjust: 100%;
+            }
+            body {
+                margin: 0;
+                background: var(--paper);
+                color: var(--ink);
+                font-family: 'IBM Plex Sans', system-ui, sans-serif;
+                font-size: 15px;
+                line-height: 1.6;
+                -webkit-font-smoothing: antialiased;
+            }
+            .sheet {
+                max-width: 920px;
+                margin: 0 auto;
+                padding: 0 28px 64px;
+            }
+
+            /* header */
+            header {
+                padding: 44px 0 24px;
+                border-bottom: 1px solid var(--line);
+            }
+            .rail {
+                height: 3px;
+                width: 56px;
+                background: var(--teal-line);
+                border-radius: 2px;
+                margin-bottom: 22px;
+            }
+            .eyebrow {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--teal);
+                margin: 0 0 14px;
+            }
+            h1 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-weight: 600;
+                font-size: clamp(26px, 4vw, 38px);
+                line-height: 1.1;
+                letter-spacing: -0.02em;
+                margin: 0 0 14px;
+                max-width: 22ch;
+            }
+            .intro {
+                font-size: 16px;
+                color: var(--ink-soft);
+                max-width: 64ch;
+                margin: 0;
+                line-height: 1.55;
+            }
+
+            /* phase ribbon + legend */
+            .ribbon {
+                display: flex;
+                gap: 8px;
+                margin: 28px 0 10px;
+                flex-wrap: wrap;
+            }
+            .ribbon span {
+                flex: 1 1 auto;
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                text-align: center;
+                padding: 10px 8px;
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                color: var(--ink-soft);
+            }
+            .legend {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 16px;
+                font-size: 12.5px;
+                color: var(--ink-mute);
+                font-family: 'IBM Plex Mono', monospace;
+            }
+            .legend b {
+                display: inline-block;
+                width: 11px;
+                height: 11px;
+                border-radius: 3px;
+                margin-right: 6px;
+                vertical-align: middle;
+            }
+            .lg-teal b {
+                background: var(--teal-line);
+            }
+            .lg-amber b {
+                background: var(--amber-line);
+            }
+            .lg-purple b {
+                background: var(--purple-line);
+            }
+            .lg-gray b {
+                background: var(--gray-line);
+            }
+
+            /* phase divider */
+            .phase {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                letter-spacing: 0.16em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                margin: 44px 0 4px;
+                display: flex;
+                align-items: center;
+                gap: 14px;
+            }
+            .phase::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background: var(--line);
+            }
+
+            /* stage card */
+            .stage {
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 22px 24px;
+                margin-top: 18px;
+            }
+            .stage-head {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                margin-bottom: 4px;
+            }
+            .stage-num {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 14px;
+                font-weight: 500;
+                width: 34px;
+                height: 34px;
+                flex: none;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .a-teal {
+                background: var(--teal-bg);
+                color: var(--teal);
+            }
+            .a-amber {
+                background: var(--amber-bg);
+                color: var(--amber);
+            }
+            .a-purple {
+                background: var(--purple-bg);
+                color: var(--purple);
+            }
+            .a-gray {
+                background: var(--gray-bg);
+                color: var(--gray-t);
+            }
+            .stage-head h3 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 19px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+                margin: 0;
+                flex: 1;
+            }
+            .tag {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                font-weight: 500;
+                letter-spacing: 0.03em;
+                padding: 3px 9px;
+                border-radius: 6px;
+                white-space: nowrap;
+            }
+            .t-teal {
+                background: var(--teal-bg);
+                color: var(--teal);
+            }
+            .t-amber {
+                background: var(--amber-bg);
+                color: var(--amber);
+            }
+            .t-purple {
+                background: var(--purple-bg);
+                color: var(--purple);
+            }
+            .t-gray {
+                background: var(--gray-bg);
+                color: var(--gray-t);
+            }
+            .io {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                color: var(--ink-mute);
+                margin: 0 0 14px 48px;
+            }
+            .io b {
+                color: var(--ink-soft);
+                font-weight: 500;
+            }
+            .lead {
+                margin: 0 0 16px;
+                font-size: 15px;
+                color: var(--ink);
+                line-height: 1.55;
+            }
+
+            .detail-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                padding-top: 16px;
+                border-top: 1px solid var(--line-soft);
+            }
+            .detail-grid h4 {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                margin: 0 0 6px;
+                font-weight: 500;
+            }
+            .detail-grid p {
+                margin: 0;
+                font-size: 13.5px;
+                color: var(--ink-soft);
+                line-height: 1.5;
+            }
+            .detail-grid code {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 12px;
+                background: var(--line-soft);
+                padding: 1px 5px;
+                border-radius: 4px;
+                color: var(--ink);
+            }
+            .meta {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-top: 16px;
+            }
+            .chip {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                color: var(--ink-mute);
+                background: var(--paper);
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                padding: 3px 9px;
+            }
+
+            /* review gate wrapper */
+            .gatewrap {
+                border: 1px dashed var(--gray-line);
+                border-radius: 14px;
+                padding: 6px 16px 18px;
+                margin-top: 18px;
+                background: rgba(180, 178, 169, 0.05);
+            }
+            .gatewrap > .gate-label {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                padding: 12px 4px 2px;
+            }
+            .gatewrap .stage {
+                margin-top: 14px;
+            }
+
+            /* documentation deep block */
+            .docblock {
+                background: var(--purple-bg);
+                border: 1px solid var(--purple-line);
+                border-radius: 14px;
+                padding: 24px 26px;
+                margin-top: 18px;
+            }
+            .docblock h3 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 19px;
+                font-weight: 600;
+                margin: 0 0 4px;
+                color: var(--purple);
+            }
+            .docblock > p {
+                margin: 0 0 18px;
+                font-size: 14.5px;
+                color: #2f2870;
+                line-height: 1.55;
+            }
+            .doc-split {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-bottom: 16px;
+            }
+            .doc-card {
+                background: var(--card);
+                border: 1px solid #d8d5f4;
+                border-radius: 10px;
+                padding: 16px 18px;
+            }
+            .doc-card h4 {
+                font-family: 'IBM Plex Sans', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 6px;
+                color: var(--purple);
+            }
+            .doc-card p {
+                margin: 0;
+                font-size: 13px;
+                color: var(--ink-soft);
+                line-height: 1.5;
+            }
+            .doc-card .flag {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 10.5px;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                display: block;
+                margin-top: 8px;
+            }
+            .doc-detail h4 {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #6157a8;
+                margin: 14px 0 4px;
+                font-weight: 500;
+            }
+            .doc-detail p {
+                margin: 0;
+                font-size: 13.5px;
+                color: #2f2870;
+                line-height: 1.5;
+            }
+
+            /* appendix */
+            .appendix {
+                margin-top: 56px;
+            }
+            .appendix .eyebrow {
+                color: var(--teal);
+            }
+            .appendix h2 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+                margin: 6px 0 22px;
+            }
+            .apx-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            .apx {
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 20px 22px;
+            }
+            .apx h3 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 8px;
+            }
+            .apx p {
+                margin: 0;
+                font-size: 13.5px;
+                color: var(--ink-soft);
+                line-height: 1.5;
+            }
+            .apx ul {
+                margin: 6px 0 0;
+                padding-left: 18px;
+            }
+            .apx li {
+                font-size: 13.5px;
+                color: var(--ink-soft);
+                line-height: 1.6;
+                margin-bottom: 3px;
+            }
+            .apx.metrics {
+                border-color: var(--teal-line);
+            }
+            .apx-wide {
+                grid-column: 1 / -1;
+            }
+
+            /* testing block */
+            .testblock {
+                background: var(--teal-bg);
+                border: 1px solid var(--teal-line);
+                border-radius: 14px;
+                padding: 24px 26px;
+                margin-top: 18px;
+            }
+            .testblock h3 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 19px;
+                font-weight: 600;
+                margin: 0 0 4px;
+                color: var(--teal);
+            }
+            .testblock > p {
+                margin: 0 0 18px;
+                font-size: 14.5px;
+                color: #0b4a3a;
+                line-height: 1.55;
+            }
+            .test-split {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 16px;
+            }
+            .test-card {
+                background: var(--card);
+                border: 1px solid #bfe6d8;
+                border-radius: 10px;
+                padding: 16px 18px;
+            }
+            .test-card h4 {
+                font-family: 'IBM Plex Sans', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
+                margin: 0 0 6px;
+                color: var(--teal);
+            }
+            .test-card p {
+                margin: 0 0 9px;
+                font-size: 13px;
+                color: var(--ink-soft);
+                line-height: 1.5;
+            }
+            .test-card .tools {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 10.5px;
+                letter-spacing: 0.02em;
+                color: var(--ink-mute);
+                display: block;
+                line-height: 1.5;
+            }
+            .test-foot {
+                margin: 16px 0 0;
+                font-size: 13.5px;
+                color: #0b4a3a;
+                line-height: 1.55;
+            }
+
+            /* standards & guardrails */
+            .standards {
+                margin-top: 56px;
+            }
+            .standards .eyebrow {
+                color: var(--teal);
+            }
+            .standards h2 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+                margin: 6px 0 8px;
+            }
+            .standards .sub {
+                margin: 0 0 22px;
+                font-size: 14.5px;
+                color: var(--ink-soft);
+                max-width: 66ch;
+                line-height: 1.55;
+            }
+            .layer3 {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 14px;
+            }
+            .layer-card {
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 18px 20px;
+            }
+            .layer-card .lk {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 10.5px;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                margin: 0 0 6px;
+            }
+            .layer-card h3 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 7px;
+            }
+            .layer-card p {
+                margin: 0;
+                font-size: 13px;
+                color: var(--ink-soft);
+                line-height: 1.5;
+            }
+            .layer-card.enforce {
+                border-color: var(--teal-line);
+            }
+            .guardrail {
+                background: var(--gray-bg);
+                border: 1px solid var(--gray-line);
+                border-radius: 14px;
+                padding: 22px 24px;
+                margin-top: 18px;
+            }
+            .guardrail h3 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 17px;
+                font-weight: 600;
+                margin: 0 0 6px;
+            }
+            .guardrail > p {
+                margin: 0 0 16px;
+                font-size: 14px;
+                color: var(--ink-soft);
+                line-height: 1.55;
+            }
+            table.matrix {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            table.matrix th,
+            table.matrix td {
+                padding: 10px 14px;
+                text-align: left;
+                border-bottom: 1px solid var(--line-soft);
+            }
+            table.matrix thead th {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 10.5px;
+                letter-spacing: 0.07em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                font-weight: 500;
+                background: #fafbfc;
+            }
+            table.matrix tbody tr:last-child td {
+                border-bottom: 0;
+            }
+            table.matrix td.org {
+                font-weight: 600;
+                color: var(--ink);
+            }
+            .d-allow {
+                color: var(--teal);
+                font-weight: 500;
+            }
+            .d-deny {
+                color: #a32d2d;
+                font-weight: 500;
+            }
+            .d-ask {
+                color: var(--amber);
+                font-weight: 500;
+            }
+            .guardrail .foot {
+                margin: 14px 0 0;
+                font-size: 13px;
+                color: var(--ink-soft);
+                line-height: 1.55;
+            }
+
+            /* licensing */
+            .licensing {
+                margin-top: 56px;
+            }
+            .licensing .eyebrow {
+                color: var(--teal);
+            }
+            .licensing h2 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                letter-spacing: -0.01em;
+                margin: 6px 0 8px;
+            }
+            .licensing .sub {
+                margin: 0 0 22px;
+                font-size: 14.5px;
+                color: var(--ink-soft);
+                max-width: 66ch;
+                line-height: 1.55;
+            }
+            .lic-table-wrap {
+                overflow-x: auto;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                background: var(--card);
+            }
+            table.lic {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 13px;
+                min-width: 640px;
+            }
+            table.lic th,
+            table.lic td {
+                text-align: left;
+                padding: 12px 15px;
+                border-bottom: 1px solid var(--line-soft);
+                vertical-align: top;
+            }
+            table.lic thead th {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 10.5px;
+                letter-spacing: 0.07em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                font-weight: 500;
+                background: #fafbfc;
+                white-space: nowrap;
+            }
+            table.lic tbody tr:last-child td {
+                border-bottom: 0;
+            }
+            table.lic td.tool {
+                font-weight: 600;
+                color: var(--ink);
+                white-space: nowrap;
+            }
+            table.lic td.cost {
+                font-family: 'IBM Plex Mono', monospace;
+                color: var(--ink);
+                white-space: nowrap;
+            }
+            table.lic td {
+                color: var(--ink-soft);
+                line-height: 1.45;
+            }
+            table.lic tr.alt td {
+                background: var(--teal-bg);
+            }
+            table.lic strong {
+                color: var(--teal);
+                font-weight: 600;
+            }
+            .lic-note {
+                font-size: 12.5px;
+                color: var(--ink-mute);
+                margin-top: 10px;
+                line-height: 1.55;
+            }
+
+            .raci {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+                margin-top: 22px;
+            }
+            .raci-card {
+                background: var(--card);
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                padding: 18px 20px;
+            }
+            .raci-card .rtool {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 15px;
+                font-weight: 600;
+                margin: 0 0 10px;
+            }
+            .raci-row {
+                display: flex;
+                gap: 10px;
+                font-size: 13px;
+                padding: 4px 0;
+                border-top: 1px solid var(--line-soft);
+            }
+            .raci-row:first-of-type {
+                border-top: 0;
+            }
+            .raci-row .rk {
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 10.5px;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                color: var(--ink-mute);
+                flex: none;
+                width: 74px;
+                padding-top: 2px;
+            }
+            .raci-row .rv {
+                color: var(--ink-soft);
+                line-height: 1.4;
+            }
+            .limits {
+                background: var(--amber-bg);
+                border: 1px solid var(--amber-line);
+                border-radius: 12px;
+                padding: 18px 22px;
+                margin-top: 22px;
+            }
+            .limits h3 {
+                font-family: 'Space Grotesk', sans-serif;
+                font-size: 16px;
+                font-weight: 600;
+                margin: 0 0 6px;
+                color: var(--amber);
+            }
+            .limits p {
+                margin: 0;
+                font-size: 13.5px;
+                color: #6b430a;
+                line-height: 1.55;
+            }
+
+            footer {
+                margin-top: 48px;
+                padding-top: 20px;
+                border-top: 1px solid var(--line);
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11.5px;
+                color: var(--ink-mute);
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px 22px;
+                justify-content: space-between;
+            }
+
+            @media (max-width: 760px) {
+                .detail-grid {
+                    grid-template-columns: 1fr;
+                }
+                .doc-split {
+                    grid-template-columns: 1fr;
+                }
+                .apx-grid {
+                    grid-template-columns: 1fr;
+                }
+                .raci {
+                    grid-template-columns: 1fr;
+                }
+                .layer3 {
+                    grid-template-columns: 1fr;
+                }
+                .test-split {
+                    grid-template-columns: 1fr;
+                }
+                .ribbon span {
+                    flex-basis: 40%;
+                }
+            }
+            @media print {
+                body {
+                    background: #fff;
+                }
+                .sheet {
+                    padding: 0;
+                }
+                .stage,
+                .docblock,
+                .apx,
+                .gatewrap,
+                .doc-card {
+                    break-inside: avoid;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="sheet">
+            <header>
+                <div class="rail"></div>
+                <p class="eyebrow">
+                    Detailed breakdown · companion to the one-pager
+                </p>
+                <h1>How each stage works, and what it takes to run it.</h1>
+                <p class="intro">
+                    The one-pager shows the shape of the pipeline. This document
+                    expands every stage — what actually happens, what we
+                    configure once to make it happen, and what to watch for — so
+                    the deeper conversation has the detail it needs. Read it
+                    alongside the blueprint.
+                </p>
+
+                <div class="ribbon">
+                    <span>1 · Plan</span><span>2 · Build</span
+                    ><span>3 · Review</span><span>4 · Release</span>
+                </div>
+                <div class="legend">
+                    <span class="lg-teal"><b></b>Automated / AI</span>
+                    <span class="lg-amber"><b></b>Human decision</span>
+                    <span class="lg-gray"><b></b>Handoff / infra</span>
+                    <span class="lg-purple"><b></b>Documentation</span>
+                </div>
+            </header>
+
+            <!-- PHASE 1 -->
+            <p class="phase">Phase 1 · Plan</p>
+
+            <article class="stage">
+                <div class="stage-head">
+                    <span class="stage-num a-gray">01</span>
+                    <h3>Story intake &amp; technical grooming</h3>
+                    <span class="tag t-gray">Jira</span
+                    ><span class="tag t-teal">Claude-assisted</span>
+                </div>
+                <p class="io">
+                    <b>a business ask</b> →
+                    <b>a buildable, technically-groomed story</b>
+                </p>
+                <p class="lead">
+                    The story is the pipeline's contract, and it's the first
+                    place Claude adds value — not by writing the business ask,
+                    but by sharpening it technically. A developer or tech lead
+                    runs Claude over the draft during refinement to turn a
+                    business request into a precisely specified story before it
+                    enters the sprint. Everything downstream inherits this
+                    quality, so it's where the flow is won or lost.
+                </p>
+                <div class="detail-grid">
+                    <div>
+                        <h4>What Claude does</h4>
+                        <p>
+                            Reads the draft story from Jira (via MCP) alongside
+                            the codebase and metadata, then drafts acceptance
+                            criteria in a consistent, parseable format, lists
+                            the objects, Apex, and LWC likely affected, flags
+                            security and governor-limit implications, proposes
+                            edge cases and a first-cut test-scenario list, and
+                            surfaces open questions to take back to the
+                            business.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Set up once</h4>
+                        <p>
+                            A short "groom this story" skill or prompt, plus
+                            read access to Jira and the repo. Agree a "ready"
+                            definition and story template so the groomed output
+                            lands in the same shape every time.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Watch-outs</h4>
+                        <p>
+                            This is technical grooming, not business authorship
+                            — a human still decides what's in scope. Claude can
+                            turn a thin story into sharp questions, but it can't
+                            invent missing product intent.
+                        </p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <span class="chip">Owner · Tech lead + dev</span
+                    ><span class="chip">Effort · Low</span>
+                </div>
+            </article>
+
+            <article class="stage">
+                <div class="stage-head">
+                    <span class="stage-num a-teal">02</span>
+                    <h3>Plan</h3>
+                    <span class="tag t-teal">Claude Code · MCP</span>
+                </div>
+                <p class="io">
+                    <b>Jira key</b> → <b>a proposed plan, pending approval</b>
+                </p>
+                <p class="lead">
+                    The developer starts Claude Code and points it at the story
+                    key. Claude pulls the issue, its criteria, and the
+                    discussion straight from Jira over the Atlassian MCP
+                    connection, then proposes an implementation plan — the files
+                    it will touch, the approach, the tests — before editing
+                    anything.
+                </p>
+                <div class="detail-grid">
+                    <div>
+                        <h4>Mechanics</h4>
+                        <p>
+                            Atlassian's Rovo MCP server exposes Jira to MCP
+                            clients; Claude Code connects to it through its MCP
+                            config. Plan mode produces the plan without making
+                            edits.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Set up once</h4>
+                        <p>
+                            Register the Atlassian MCP server in the team's
+                            Claude Code config and authenticate per developer. A
+                            short reusable prompt —
+                            <code>read &lt;KEY&gt;, propose a plan</code> —
+                            keeps it consistent.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Watch-outs</h4>
+                        <p>
+                            Scope the connection to read-only access and keep
+                            credentials per developer. The plan inherits the
+                            story's quality (see 01).
+                        </p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <span class="chip">Owner · Developer</span
+                    ><span class="chip">Effort · Low</span>
+                </div>
+            </article>
+
+            <article class="stage">
+                <div class="stage-head">
+                    <span class="stage-num a-amber">03</span>
+                    <h3>Approve plan</h3>
+                    <span class="tag t-amber">Human gate</span>
+                </div>
+                <p class="io">
+                    <b>proposed plan</b> → <b>a green-lit approach</b>
+                </p>
+                <p class="lead">
+                    The developer reads the plan and approves it, adjusts it, or
+                    sends it back. This is the cheapest correction point in the
+                    entire flow — catching a wrong direction here costs a
+                    minute; catching it in review costs a rewrite.
+                </p>
+                <div class="detail-grid">
+                    <div>
+                        <h4>Mechanics</h4>
+                        <p>
+                            Interactive: the developer accepts the plan to
+                            proceed, or edits the plan text and re-runs planning
+                            until it's right.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Set up once</h4>
+                        <p>
+                            No tooling — a team norm that non-trivial stories
+                            always pass through plan-then-approve rather than
+                            jumping straight to code.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Watch-outs</h4>
+                        <p>
+                            Don't let it become a rubber stamp. Define what
+                            counts as "trivial" so skipping the gate is a
+                            consistent, deliberate call.
+                        </p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <span class="chip">Owner · Developer</span
+                    ><span class="chip">Effort · Low</span>
+                </div>
+            </article>
+
+            <!-- PHASE 2 -->
+            <p class="phase">Phase 2 · Build</p>
+
+            <article class="stage">
+                <div class="stage-head">
+                    <span class="stage-num a-teal">04</span>
+                    <h3>Development</h3>
+                    <span class="tag t-teal">Claude Code</span>
+                </div>
+                <p class="io"><b>approved plan</b> → <b>a working branch</b></p>
+                <p class="lead">
+                    Claude Code implements against the approved plan — editing
+                    across files, running tests, and iterating with the
+                    developer in the loop. Before pushing, an optional local
+                    "review this branch against target" pass gives the developer
+                    a pre-flight self-check.
+                </p>
+                <div class="detail-grid">
+                    <div>
+                        <h4>Mechanics</h4>
+                        <p>
+                            Agentic editing in the working tree. The pre-flight
+                            review is a separate, fresh Claude Code invocation
+                            comparing branch to target — deliberately not the
+                            session that wrote the code.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Set up once</h4>
+                        <p>
+                            Make sure tests run locally. Establish the
+                            pre-flight self-review as a developer habit, not an
+                            enforced gate — enforcement lives at step 06.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Watch-outs</h4>
+                        <p>
+                            A session that wrote the code and then reviews
+                            itself mostly confirms its own work. Use a fresh
+                            session, and keep humans reading the diffs.
+                        </p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <span class="chip">Owner · Developer</span
+                    ><span class="chip">Effort · Low</span>
+                </div>
+            </article>
+
+            <article class="stage">
+                <div class="stage-head">
+                    <span class="stage-num a-gray">05</span>
+                    <h3>Create PR</h3>
+                    <span class="tag t-gray">Azure DevOps</span>
+                </div>
+                <p class="io">
+                    <b>working branch</b> → <b>an open pull request</b>
+                </p>
+                <p class="lead">
+                    The developer opens the PR against the target branch. This
+                    is the event that triggers the automated review — no new
+                    developer action, just the existing "open a PR" step.
+                </p>
+                <div class="detail-grid">
+                    <div>
+                        <h4>Mechanics</h4>
+                        <p>
+                            A standard Azure DevOps PR. Your existing PR
+                            validation pipeline runs on creation and update; the
+                            review step is added into that pipeline.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Set up once</h4>
+                        <p>
+                            Nothing beyond wiring the review step (06) into the
+                            PR pipeline you already run.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Watch-outs</h4>
+                        <p>
+                            Make the review run on PR <em>update</em>, not just
+                            creation, so re-pushed changes are re-reviewed
+                            rather than reviewed once and forgotten.
+                        </p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <span class="chip">Owner · Developer</span
+                    ><span class="chip">Effort · Low</span>
+                </div>
+            </article>
+
+            <!-- PHASE 3 -->
+            <p class="phase">Phase 3 · Review gate</p>
+
+            <div class="gatewrap">
+                <div class="gate-label">
+                    Review gate — automated pass, then human sign-off
+                </div>
+
+                <article class="stage">
+                    <div class="stage-head">
+                        <span class="stage-num a-teal">06</span>
+                        <h3>AI review</h3>
+                        <span class="tag t-teal">Automated</span>
+                    </div>
+                    <p class="io">
+                        <b>PR diff</b> → <b>inline review comments</b>
+                    </p>
+                    <p class="lead">
+                        On PR open or update, the pipeline sends the diff to an
+                        AI reviewer, which posts bugs, security issues, and
+                        style notes as inline comments — automatically, on every
+                        PR, whether or not anyone remembers to ask. This is the
+                        enforced version of the pre-flight check from step 04.
+                    </p>
+                    <div class="detail-grid">
+                        <div>
+                            <h4>Mechanics — buy</h4>
+                            <p>
+                                Connect CodeRabbit to your Azure DevOps org. It
+                                reviews natively, comments inline, learns team
+                                preferences, and offers autofixes. Nothing to
+                                maintain.
+                            </p>
+                        </div>
+                        <div>
+                            <h4>Mechanics — build</h4>
+                            <p>
+                                A pipeline step pulls the diff with
+                                <code>git</code>, calls the Claude API with a
+                                review prompt, and posts results back through
+                                the Azure DevOps REST API. Full control; you own
+                                the upkeep.
+                            </p>
+                        </div>
+                        <div>
+                            <h4>Watch-outs</h4>
+                            <p>
+                                Keep it non-blocking — comments, not a hard
+                                fail, because AI review has false positives. Cap
+                                cost on large diffs. Building in-house means
+                                maintaining a mini-CodeRabbit.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="meta">
+                        <span class="chip">Owner · Pipeline / platform</span
+                        ><span class="chip"
+                            >Effort · Low (buy) / Medium (build)</span
+                        >
+                    </div>
+                </article>
+
+                <article class="stage">
+                    <div class="stage-head">
+                        <span class="stage-num a-amber">07</span>
+                        <h3>Approve PR</h3>
+                        <span class="tag t-amber">Human gate</span>
+                    </div>
+                    <p class="io">
+                        <b>AI comments + diff</b> → <b>a merge decision</b>
+                    </p>
+                    <p class="lead">
+                        A human reviewer reads the AI's comments and the diff,
+                        then approves or requests changes. The AI made the
+                        review faster and cleared the boring findings; it did
+                        not replace the reviewer's judgment on correctness,
+                        architecture, and anything security-sensitive.
+                    </p>
+                    <div class="detail-grid">
+                        <div>
+                            <h4>Mechanics</h4>
+                            <p>
+                                An Azure DevOps branch policy requires at least
+                                one human approver. The AI review is registered
+                                as an optional, informational status — not a
+                                required check.
+                            </p>
+                        </div>
+                        <div>
+                            <h4>Set up once</h4>
+                            <p>
+                                Branch policy on the target branch: minimum
+                                approvers, linked work items, and the review
+                                pipeline as an optional check.
+                            </p>
+                        </div>
+                        <div>
+                            <h4>Watch-outs</h4>
+                            <p>
+                                Never wire the AI as a required gate. For an
+                                independent read, consider running the review on
+                                a different model than the one that wrote the
+                                code.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="meta">
+                        <span class="chip">Owner · Reviewer</span
+                        ><span class="chip">Effort · Low</span>
+                    </div>
+                </article>
+            </div>
+
+            <!-- PHASE 4 -->
+            <p class="phase">Phase 4 · Release</p>
+
+            <article class="stage">
+                <div class="stage-head">
+                    <span class="stage-num a-gray">08</span>
+                    <h3>Merge to non-prod</h3>
+                    <span class="tag t-gray">Auto deploy</span>
+                </div>
+                <p class="io">
+                    <b>approved PR</b> → <b>change live on non-prod</b>
+                </p>
+                <p class="lead">
+                    On merge, your existing CI validates and deploys to the
+                    non-prod target; the change then waits in the sprint
+                    package. This is your current path, untouched — the AI
+                    additions sit before this step, not inside your deploy
+                    pipeline.
+                </p>
+                <div class="detail-grid">
+                    <div>
+                        <h4>Mechanics</h4>
+                        <p>
+                            The merge → build → deploy-to-non-prod pipeline you
+                            run today, unchanged.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Set up once</h4>
+                        <p>Nothing new.</p>
+                    </div>
+                    <div>
+                        <h4>Watch-outs</h4>
+                        <p>
+                            Keeping this step untouched is the point — the
+                            proposal adds no risk to how you already ship to
+                            environments.
+                        </p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <span class="chip">Owner · Pipeline</span
+                    ><span class="chip">Effort · None</span>
+                </div>
+            </article>
+
+            <article class="stage">
+                <div class="stage-head">
+                    <span class="stage-num a-gray">09</span>
+                    <h3>Sprint release</h3>
+                    <span class="tag t-gray">Production</span>
+                </div>
+                <p class="io">
+                    <b>merged changes</b> → <b>one released package</b>
+                </p>
+                <p class="lead">
+                    All ready changes ship to production as a single package on
+                    the weekly or bi-weekly cadence. The release event doubles
+                    as the documentation checkpoint: it's what triggers the
+                    consolidation described below.
+                </p>
+                <div class="detail-grid">
+                    <div>
+                        <h4>Mechanics</h4>
+                        <p>
+                            Your existing release pipeline, plus a hook that
+                            gathers the PRs and stories in the package and kicks
+                            off doc drafting.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Set up once</h4>
+                        <p>
+                            A release-time job that collects what's in the
+                            package and starts the doc consolidation run.
+                        </p>
+                    </div>
+                    <div>
+                        <h4>Watch-outs</h4>
+                        <p>
+                            Keep doc generation off the critical deploy path —
+                            it runs alongside the release, and a doc failure
+                            must never block a production deploy.
+                        </p>
+                    </div>
+                </div>
+                <div class="meta">
+                    <span class="chip">Owner · Release lead / pipeline</span
+                    ><span class="chip">Effort · Medium</span>
+                </div>
+            </article>
+
+            <!-- TESTING -->
+            <p class="phase">Parallel · Testing</p>
+
+            <div class="testblock">
+                <h3>AI-assisted testing</h3>
+                <p>
+                    Separate from the unit tests written during build, AI earns
+                    its place in the testing that's expensive to maintain by
+                    hand. This sits across non-prod validation (step 08) and the
+                    pre-release gate (before step 09): Claude authors,
+                    maintains, and triages the tests and data; the pipeline
+                    executes them.
+                </p>
+
+                <div class="test-split">
+                    <div class="test-card">
+                        <h4>Test data &amp; scenarios</h4>
+                        <p>
+                            Claude generates realistic, referentially-consistent
+                            Salesforce datasets for a given scenario — Accounts,
+                            Contacts, and Opportunities that actually hang
+                            together — to seed a sandbox for automated or manual
+                            testing. It authors the recipes; the CLI loads them.
+                        </p>
+                        <span class="tools"
+                            >Snowfakery recipes · sf data tree<br />synthetic
+                            only — never prod PII</span
+                        >
+                    </div>
+                    <div class="test-card">
+                        <h4>Regression testing</h4>
+                        <p>
+                            For each change, Claude helps pick which regression
+                            scenarios are in scope (impact-based selection),
+                            keeps the suite current as the app evolves, and
+                            triages failures with root-cause summaries and
+                            flaky-test detection — turning a red run into a
+                            short, actionable list.
+                        </p>
+                        <span class="tools"
+                            >existing suite · CI on non-prod</span
+                        >
+                    </div>
+                    <div class="test-card">
+                        <h4>Front-end &amp; API execution</h4>
+                        <p>
+                            Claude generates and maintains end-to-end UI and API
+                            tests and runs them against non-prod — browser flows
+                            through a test framework, and API / integration
+                            checks against endpoints. For exploratory runs it
+                            can drive the browser directly.
+                        </p>
+                        <span class="tools"
+                            >Playwright / UTAM / Provar<br />Postman + newman ·
+                            Claude in Chrome</span
+                        >
+                    </div>
+                </div>
+
+                <p class="test-foot">
+                    Claude's role is authoring, maintaining, and triaging — the
+                    pipeline is the test runner, and a human still owns the go /
+                    no-go at release. Most of these tools are open-source
+                    (Snowfakery, Playwright, UTAM); Provar is a commercial
+                    Salesforce option if you want low-code test maintenance, and
+                    can be added to the licensing table if it's in scope.
+                </p>
+            </div>
+
+            <!-- DOCUMENTATION TRACK -->
+            <p class="phase">Parallel · Documentation</p>
+
+            <div class="docblock">
+                <h3>Documentation track</h3>
+                <p>
+                    This is the part to be most clear-eyed about, because "docs
+                    stay updated automatically" is realistic for one kind of
+                    documentation and aspirational for the other. Separating the
+                    two is what makes it work.
+                </p>
+
+                <div class="doc-split">
+                    <div class="doc-card">
+                        <h4>Change history</h4>
+                        <p>
+                            Release notes and "what changed this sprint."
+                            Append-only, so the AI can aggregate the package's
+                            PRs and stories into a draft with little friction.
+                        </p>
+                        <span class="flag">Automatable — high value</span>
+                    </div>
+                    <div class="doc-card">
+                        <h4>Living reference</h4>
+                        <p>
+                            "How the pricing engine works today." Has to be
+                            edited in place; an AI that only appends makes it
+                            longer and eventually wrong. Needs a human owner per
+                            page.
+                        </p>
+                        <span class="flag">Human-owned — assisted</span>
+                    </div>
+                </div>
+
+                <div class="doc-detail">
+                    <h4>Cadence — tied to release, not to every PR</h4>
+                    <p>
+                        Mid-sprint PRs are partial and often superseded, so
+                        per-PR publishing is noise. Each PR only produces a
+                        <strong>draft doc fragment</strong> as part of
+                        Definition of Done — which is what stops it being
+                        skipped — and those fragments are consolidated at the
+                        sprint release.
+                    </p>
+                    <h4>Layered page — one page, two audiences</h4>
+                    <p>
+                        A plain-language "what this does and why it matters"
+                        summary sits on top; technical detail sits below or on a
+                        child page. The AI drafts the business layer well from a
+                        diff; engineers own the technical layer. Trying to serve
+                        both audiences in one undifferentiated block satisfies
+                        neither.
+                    </p>
+                    <h4>Prerequisite — a feature-to-page map</h4>
+                    <p>
+                        The consolidation job needs to know which Confluence
+                        page owns which feature or module, or auto-updates
+                        scatter. Maintain that mapping so a change's docs land
+                        in the right place.
+                    </p>
+                    <h4>Mechanism</h4>
+                    <p>
+                        Either Rovo inside Confluence, or a release-time job
+                        that feeds the merged PRs and stories to Claude and
+                        posts <strong>drafts</strong> via the Confluence REST
+                        API. Either way, a person reviews before publish — a
+                        wrong page read as authoritative erodes trust faster
+                        than a missing one.
+                    </p>
+                </div>
+            </div>
+
+            <!-- STANDARDS & GUARDRAILS -->
+            <section class="standards">
+                <p class="eyebrow">Standards &amp; guardrails</p>
+                <h2>How the agent stays on the rails</h2>
+                <p class="sub">
+                    Consistent quality from an AI-driven pipeline comes from
+                    three layers working together — and the rules that truly
+                    cannot slip live in the deterministic one, not in a document
+                    the model reads and mostly follows.
+                </p>
+                <div class="layer3">
+                    <div class="layer-card">
+                        <p class="lk">Layer 1 · Guidance</p>
+                        <h3>CLAUDE.md</h3>
+                        <p>
+                            A project standard checked into the repo and read at
+                            the start of every session — stack, enterprise
+                            patterns, naming, security musts, build commands. It
+                            guides the agent; it does not enforce.
+                        </p>
+                    </div>
+                    <div class="layer-card">
+                        <p class="lk">Layer 2 · Procedures</p>
+                        <h3>Skills</h3>
+                        <p>
+                            On-demand recipes for recurring work — scaffolding
+                            an fflib service, an LWC, a trigger, or running a
+                            security review — so enterprise patterns are applied
+                            consistently instead of remembered.
+                        </p>
+                    </div>
+                    <div class="layer-card enforce">
+                        <p class="lk">Layer 3 · Enforcement</p>
+                        <h3>Hooks + CI</h3>
+                        <p>
+                            Deterministic gates that run every time and can
+                            block — linters and static analysis on edit,
+                            coverage gates in CI, and the org-access guard
+                            below. This is where "must" becomes binding.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="guardrail">
+                    <h3>Org-access guardrail</h3>
+                    <p>
+                        A pre-execution hook inspects every Salesforce CLI
+                        command before it runs, resolves its target org against
+                        an allowlist, and applies a fixed policy — failing
+                        closed on anything it can't classify or that names no
+                        explicit target.
+                    </p>
+                    <table class="matrix">
+                        <thead>
+                            <tr>
+                                <th>Org</th>
+                                <th>Read</th>
+                                <th>Write</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="org">devuk — personal sandbox</td>
+                                <td class="d-allow">allow</td>
+                                <td class="d-allow">allow</td>
+                            </tr>
+                            <tr>
+                                <td class="org">uat</td>
+                                <td class="d-ask">ask — approval</td>
+                                <td class="d-deny">deny</td>
+                            </tr>
+                            <tr>
+                                <td class="org">prod</td>
+                                <td class="d-deny">deny</td>
+                                <td class="d-deny">deny</td>
+                            </tr>
+                            <tr>
+                                <td class="org">unknown / no target named</td>
+                                <td class="d-deny">deny</td>
+                                <td class="d-deny">deny</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="foot">
+                        The strongest guarantee is that production is never
+                        authenticated in this environment — prod deploys run
+                        only from the release pipeline with their own approvals.
+                        For a team, the hook is deployed through enterprise
+                        managed settings so a developer's local config cannot
+                        remove it.
+                    </p>
+                </div>
+            </section>
+
+            <!-- LICENSING -->
+            <section class="licensing">
+                <p class="eyebrow">Licensing &amp; accountability</p>
+                <h2>Who buys what, and who owns it</h2>
+                <p class="sub">
+                    The only genuinely new per-developer license in this
+                    pipeline is <strong>Claude Code</strong>. Everything on the
+                    Atlassian side reuses seats you already hold — the MCP
+                    connector is free and each developer signs in with their
+                    existing Jira account, so "authenticate per developer" is a
+                    one-time login, not a purchase. Figures are as of August
+                    2026; confirm at procurement.
+                </p>
+
+                <div class="lic-table-wrap">
+                    <table class="lic">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>License model</th>
+                                <th>Provider</th>
+                                <th>Cost</th>
+                                <th>Limits to know</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="alt">
+                                <td class="tool">Claude Code</td>
+                                <td>
+                                    Per-seat, <strong>named user</strong> —
+                                    assigned to individuals, not shared. Team
+                                    plan mixes Standard and Premium seats; full
+                                    agentic Claude Code needs a
+                                    <strong>Premium</strong> seat. Minimum 5
+                                    seats.
+                                </td>
+                                <td>
+                                    Anthropic — direct, or via AWS / GCP
+                                    marketplace for consolidated billing
+                                </td>
+                                <td class="cost">
+                                    Standard ~$20/seat<br />Premium
+                                    ~$100–125/seat<br />Enterprise ~$20 access +
+                                    usage
+                                </td>
+                                <td>
+                                    Usage-metered per seat. Heavy agent sessions
+                                    can hit weekly / token limits and throttle
+                                    or spill to pay-per-token. Set budget caps.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tool">
+                                    Atlassian MCP + Jira / Confluence
+                                </td>
+                                <td>
+                                    No new license — the MCP connector is free
+                                    and uses each developer's
+                                    <strong>existing Atlassian seat</strong>.
+                                    Rovo (AI) is bundled into paid plans.
+                                </td>
+                                <td>Atlassian</td>
+                                <td class="cost">
+                                    $0 incremental<br />(Rovo Dev agent, if ever
+                                    wanted, ~$20/dev — not needed here)
+                                </td>
+                                <td>
+                                    Rovo runs on a monthly
+                                    <strong>credit allowance</strong> per user,
+                                    pooled org-wide; heavy AI use may need extra
+                                    credits.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tool">Azure DevOps</td>
+                                <td>
+                                    Already yours — per-user access plus
+                                    pipeline concurrency.
+                                </td>
+                                <td>Microsoft</td>
+                                <td class="cost">Existing spend</td>
+                                <td>
+                                    The review step consumes pipeline minutes /
+                                    parallel jobs — check concurrency headroom
+                                    on your current plan.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tool">AI review — buy</td>
+                                <td>
+                                    Per-seat SaaS, billed
+                                    <strong
+                                        >only for developers who open
+                                        PRs</strong
+                                    >
+                                    — not whole headcount.
+                                </td>
+                                <td>CodeRabbit — direct or AWS Marketplace</td>
+                                <td class="cost">
+                                    Pro ~$24/dev annual<br />($30 monthly); Pro
+                                    Plus ~$48
+                                </td>
+                                <td>
+                                    Free / lower tiers rate-limit reviews; Pro
+                                    is unlimited. 7-day code retention.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tool">
+                                    AI review — build
+                                    <span
+                                        style="
+                                            font-weight: 400;
+                                            color: var(--ink-mute);
+                                        "
+                                        >(alt.)</span
+                                    >
+                                </td>
+                                <td>
+                                    No seats — pay-per-token API. Full control,
+                                    you own the upkeep.
+                                </td>
+                                <td>Anthropic API</td>
+                                <td class="cost">
+                                    Usage only<br />(you set the ceiling)
+                                </td>
+                                <td>
+                                    API rate limits plus whatever hard spend cap
+                                    you set on the key.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tool">Doc automation</td>
+                                <td>
+                                    Bundled Rovo, or the same pay-per-token
+                                    Claude API.
+                                </td>
+                                <td>Atlassian / Anthropic</td>
+                                <td class="cost">
+                                    Included, or ~$50–150/mo API
+                                </td>
+                                <td>Rovo credits, or your API budget cap.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="lic-note">
+                    Named-user means a seat belongs to one person — you can
+                    reassign it, but two developers can't share one. Only Claude
+                    Code and (if bought) CodeRabbit are new line items; the
+                    Atlassian and Azure rows reuse existing contracts.
+                </p>
+
+                <div class="raci">
+                    <div class="raci-card">
+                        <p class="rtool">Claude Code — Anthropic account</p>
+                        <div class="raci-row">
+                            <span class="rk">Buys</span
+                            ><span class="rv"
+                                >Engineering manager or IT / procurement</span
+                            >
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Administers</span
+                            ><span class="rv"
+                                >Account admin assigns and reclaims seats, sets
+                                budget caps in the console</span
+                            >
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Billed</span
+                            ><span class="rv"
+                                >One consolidated invoice to the org (or via
+                                cloud marketplace)</span
+                            >
+                        </div>
+                    </div>
+                    <div class="raci-card">
+                        <p class="rtool">
+                            Atlassian — Jira / Confluence / Rovo
+                        </p>
+                        <div class="raci-row">
+                            <span class="rk">Buys</span
+                            ><span class="rv"
+                                >Already owned — no new purchase</span
+                            >
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Administers</span
+                            ><span class="rv"
+                                >Your existing Atlassian admin; manages Rovo
+                                credit allowance</span
+                            >
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Billed</span
+                            ><span class="rv">Existing Atlassian invoice</span>
+                        </div>
+                    </div>
+                    <div class="raci-card">
+                        <p class="rtool">Azure DevOps — Microsoft</p>
+                        <div class="raci-row">
+                            <span class="rk">Buys</span
+                            ><span class="rv">Already owned</span>
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Administers</span
+                            ><span class="rv"
+                                >Current Azure DevOps / project admin</span
+                            >
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Billed</span
+                            ><span class="rv"
+                                >Existing Microsoft / Azure invoice</span
+                            >
+                        </div>
+                    </div>
+                    <div class="raci-card">
+                        <p class="rtool">AI review — CodeRabbit or API key</p>
+                        <div class="raci-row">
+                            <span class="rk">Buys</span
+                            ><span class="rv"
+                                >Platform lead (buy path), or engineering (build
+                                path)</span
+                            >
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Administers</span
+                            ><span class="rv"
+                                >One account owner; for the build path, whoever
+                                holds the API key + spend cap</span
+                            >
+                        </div>
+                        <div class="raci-row">
+                            <span class="rk">Billed</span
+                            ><span class="rv"
+                                >CodeRabbit invoice, or folded into the
+                                Anthropic API bill</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="limits">
+                    <h3>The limit worth agreeing up front</h3>
+                    <p>
+                        Seat prices are predictable; the usage underneath them
+                        is not. Claude Code Premium seats, CodeRabbit, and any
+                        API path all meter actual work, so a few heavy users can
+                        run ahead of the flat seat cost. The mitigations are
+                        built in: set org-level budget caps in the Anthropic
+                        console before rollout, lean on CodeRabbit's "only
+                        PR-creators are billed" model to keep the reviewer count
+                        honest, and — on the build path — use the API key's hard
+                        spend ceiling. Agree a
+                        <strong
+                            >per-seat floor plus a capped usage ceiling</strong
+                        >
+                        with the client so there are no surprises on the
+                        invoice.
+                    </p>
+                </div>
+            </section>
+
+            <!-- APPENDIX -->
+            <section class="appendix">
+                <p class="eyebrow">Appendix · the deeper-dive questions</p>
+                <h2>What comes up when this gets real</h2>
+                <div class="apx-grid">
+                    <div class="apx">
+                        <h3>Data &amp; IP handling</h3>
+                        <p>The questions a client asks first:</p>
+                        <ul>
+                            <li>
+                                Claude Code does not train on your content by
+                                default.
+                            </li>
+                            <li>
+                                CodeRabbit retains code only briefly for the
+                                review, then discards it.
+                            </li>
+                            <li>
+                                MCP credentials stay per developer and
+                                read-only.
+                            </li>
+                            <li>
+                                Flag anything client-sensitive before it reaches
+                                a third-party reviewer.
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="apx metrics">
+                        <h3>How we'll know it worked</h3>
+                        <p>Measure on the pilot squad, before and after:</p>
+                        <ul>
+                            <li>PR cycle time — open to merge.</li>
+                            <li>Defects caught before non-prod.</li>
+                            <li>
+                                AI comments resolved before the human review
+                                starts.
+                            </li>
+                            <li>Documentation freshness at each release.</li>
+                        </ul>
+                    </div>
+
+                    <div class="apx">
+                        <h3>How we'd roll it out</h3>
+                        <p>
+                            A 4–6 week pilot on one squad: Claude Code for the
+                            build, an AI reviewer on the Azure PRs, and Rovo for
+                            stories and docs. Prove the two high-value
+                            integration points — build and review — measure
+                            them, then decide whether the test-generation and
+                            Atlassian-agent layers are worth adding before
+                            rolling wider.
+                        </p>
+                    </div>
+
+                    <div class="apx">
+                        <h3>What has to be in place first</h3>
+                        <ul>
+                            <li>
+                                A Jira "ready" definition and story template.
+                            </li>
+                            <li>Atlassian MCP access for Claude Code.</li>
+                            <li>Claude Code seats provisioned.</li>
+                            <li>
+                                Azure DevOps branch policies on target branches.
+                            </li>
+                            <li>A review step in the PR pipeline.</li>
+                            <li>A Confluence feature-to-page map.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <footer>
+                <span
+                    >Detailed breakdown — companion to the one-pager · [client]
+                    · [author]</span
+                >
+                <span
+                    >Figures &amp; product behaviour current as of August 2026 —
+                    verify at build time</span
+                >
+            </footer>
+        </div>
+    </body>
+</html>
