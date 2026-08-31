@@ -45,7 +45,7 @@ All documentation follows the two-layer template in `DOC_TEMPLATE.md`: a plain-l
 
 ## Conventions
 
-- LWC ↔ LWC communication for the listing/filter uses the Lightning Message Service channel `FiltersChange__c` (see `propertyFilter` publishing and the list subscribing). Follow that pattern rather than inventing new events.
+- LWC ↔ LWC communication for the listing/filter uses the Lightning Message Service channel `FiltersChange` (see `propertyFilter` publishing and the list subscribing). Follow that pattern rather than inventing new events.
 - Apex list endpoints return the `PagedResult` wrapper for pagination (see `PropertyController`). Reuse it.
 - Match the existing component and method style; prefer small, focused components.
 

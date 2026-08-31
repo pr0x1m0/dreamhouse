@@ -1,6 +1,6 @@
 ---
 description: Groom a Jira story into buildable, codebase-aware acceptance criteria (no code changes)
-argument-hint: [jira-story-key]
+argument-hint: '[jira-story-key]'
 ---
 
 You are grooming a Jira story for this Salesforce project. This is **technical grooming only — do not write, edit, or deploy any code, and do not open a plan or branch.**

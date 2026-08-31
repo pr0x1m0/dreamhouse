@@ -1,6 +1,6 @@
 ---
 description: Open a pull request for the current branch, linked to its Jira story
-argument-hint: [jira-story-key]
+argument-hint: '[jira-story-key]'
 ---
 
 Open a pull request for the work on the current branch.

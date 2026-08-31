@@ -1,6 +1,6 @@
 ---
 description: Draft or update a Confluence doc page for a story, following the two-layer doc template
-argument-hint: [jira-story-key]
+argument-hint: '[jira-story-key]'
 ---
 
 Draft or update documentation for a completed story, following the project documentation template at @DOC_TEMPLATE.md.

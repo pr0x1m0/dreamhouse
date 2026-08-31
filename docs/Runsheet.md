@@ -80,8 +80,8 @@ Point at the **Assumptions** section — the decisions from Stage 3, restated fo
 ### Stage 6 — Build
 
 **Do:** Let Claude Code implement.
-**Beat:** open the new files — the trigger is a one-liner that calls the handler; the real logic sits in the handler/domain class; there's a test. Show the thin trigger next to the handler.
-**Say:** "First trigger in this repo, and it already follows our pattern — no one had to remember it."
+**Beat:** open the new files — the trigger is a one-liner that calls the handler; the real logic sits in the handler/domain class; there's a test. Show the thin trigger next to the handler. Then open the test class: it builds its `Property__c` record through a new `PropertyTestDataBuilder`, not an inline literal — the first builder in the repo, picked up from the `apex-test-data-builder` skill with no prompting.
+**Say:** "First trigger in this repo, and it already follows our pattern — no one had to remember it. Same for the test data — a fluent builder instead of a hand-rolled record, because that's the convention now too."
 
 ### Stage 7 — Security review (`security-review` skill)
 

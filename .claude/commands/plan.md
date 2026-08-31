@@ -1,6 +1,6 @@
 ---
 description: Propose an implementation plan for a Jira story and stop for approval (no code changes)
-argument-hint: [jira-story-key]
+argument-hint: '[jira-story-key]'
 ---
 
 You are planning the implementation of a Jira story for this Salesforce project. **Propose a plan only — do not edit, create, or deploy any code, and do not open a branch yet.**

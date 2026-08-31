@@ -1,6 +1,6 @@
 ---
 description: Review the open pull request for a Jira story against its acceptance criteria and code quality
-argument-hint: [jira-story-key]
+argument-hint: '[jira-story-key]'
 ---
 
 You are reviewing the pull request for a Jira story in this Salesforce project. **Review only — do not edit code, and do not post anything to GitHub until I approve.**
