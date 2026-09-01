@@ -45,3 +45,5 @@ $RECYCLE.BIN/
 todo.md
 docs/todo.md
 todo.md
+.idea/*
+dreamhouse.iml
