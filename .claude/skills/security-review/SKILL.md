@@ -1,7 +1,7 @@
 ---
 name: security-review
-description: Review Salesforce code changes for security risks — CRUD/FLS enforcement, SOQL/SOSL injection, sharing model, hardcoded secrets/IDs, and unsafe client-side rendering. Use when reviewing a branch, diff, or pull request before merge, or whenever asked to security-check Apex or LWC. Read-only: reports findings, never edits.
-argument-hint: "[optional: branch, path, or PR to review]"
+description: Review Salesforce code changes for security risks — CRUD/FLS enforcement, SOQL/SOSL injection, sharing model, hardcoded secrets/IDs, and unsafe client-side rendering. Use when reviewing a branch, diff, or pull request before merge, or whenever asked to security-check Apex or LWC. Read-only for reports findings, never edits.
+argument-hint: '[optional: branch, path, or PR to review]'
 allowed-tools: Read, Grep, Glob, Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git branch:*), Bash(git merge-base:*)
 ---
 
