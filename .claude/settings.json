@@ -1,15 +1,32 @@
 {
-    "hooks": {
-        "PreToolUse": [
-            {
-                "matcher": "Bash",
-                "hooks": [
-                    {
-                        "type": "command",
-                        "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/org-guard.js\""
-                    }
-                ]
-            }
+  "permissions": {
+    "allow": [
+      "mcp__atlassian__getAccessibleAtlassianResources",
+      "mcp__atlassian__searchJiraIssuesUsingJql",
+      "mcp__atlassian__getJiraIssue",
+      "mcp__atlassian__editJiraIssue",
+      "Bash(npx prettier *)",
+      "Bash(npm run *)",
+      "Bash(sf org *)",
+      "Bash(node -p \"process.arch\")",
+      "Read(//Users/ukaya01/.nvm/versions/node/**)",
+      "Read(//opt/homebrew/Cellar/node/25.9.0_3/bin/**)",
+      "Bash(sf project *)",
+      "Bash(sf apex *)",
+      "Bash(grep -vE \"^\\\\s*$\")"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/org-guard.js\""
+          }
         ]
-    }
+      }
+    ]
+  }
 }
